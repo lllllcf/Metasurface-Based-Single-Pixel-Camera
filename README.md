@@ -4,12 +4,12 @@ Simulation program for 1-bit programmable Metasurface based signle pixel camera 
 
 * Reconstruct BIG SJTU
 
-  ![big_case2_p](.\SPC_res\大\big_case2_p.jpg)
+  ![big_case2_p](./SPC_res/大/big_case2_p.jpg)
 
 * Reconstruct SMALL SJTU
 
-  ![case1_p](.\SPC_res\小\case1_p.jpg)
+  ![case1_p](./SPC_res/小/case1_p.jpg)
 
 * Performance Contourf
 
-![contourf](.\SPC_res\contourf.png)
+![contourf](./SPC_res/contourf.png)
