@@ -1,0 +1,57 @@
+clear, clc;
+orignGraph = readmatrix('SJTU.xlsx');
+
+f = 300e9; %Hz
+c = 3e8;
+lambda = c/f;
+d_m = lambda/4;
+phase_on = 85;
+phase_off = 75;
+d = 2;
+phase_on = phase_on/180*3.14;
+phase_off = phase_off/180*3.14;
+
+[x, y] = size(orignGraph);
+Signal = orignGraph(:);
+xy = x*y;
+
+a_on = -10;
+a_on = exp(a_on/20);
+
+M = [];
+
+for a_off = -70:5:-20
+    a_off = exp(a_off/20);
+    
+    for m = 1700:25:2500
+        % Graph: (x,y)  measure times: m
+        % Signal = Base * Ksparse   Measure = Pattern * Signal
+        % (x*y,1) (x*y, x*y)(x*y,1) (m,1)    (m,x*y)  (x*y,1)
+        % Signal = (PB) K  solve b = Ax
+        Pattern0 = randi(2,m,xy) - 1;
+        Pattern = Pattern0.*(a_on-a_off)+a_off.*ones(size(Pattern0));
+        phaseD = Pattern0.*(phase_on-phase_off)+phase_off.*ones(size(Pattern0));
+        mD = (repmat(1:x,m,y)-1).*d_m;
+        nD = (ceil(repmat(1:xy,m,1)./x)-1).*d_m;
+        R = sqrt(d^2+(mD-(d_m*(x-1)/2)).^2+(nD-(d_m*(y-1)/2)).^2);
+        Pattern = abs(Pattern.*cos(2.*3.14./lambda.*R+phaseD));
+        Measure = Pattern * Signal;
+        Base = idct(eye(xy,xy))';
+        
+        Ksparse0 = pinv(Pattern*Base)*Measure;
+        Ksparse = l1eq_pd(Ksparse0, Pattern*Base, Measure);
+        % (x0,A,b)
+
+        Result = reshape(Base * Ksparse, x, y);
+        finalRes = corr2(orignGraph, Result);
+        
+        if finalRes > 0.8
+            finalRes = m;
+            break;
+        end
+    end
+    
+    M = [M,finalRes];
+end 
+
+plot(-70:5:-20,M);
